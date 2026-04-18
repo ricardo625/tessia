@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle } from 'lucide-react'
+import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle, MessageSquare, Paperclip } from 'lucide-react'
 import { TaskModal, type TaskDetail } from '@/components/TaskModal'
 import { INITIAL_LABELS, type Label } from '@/components/LabelsPopover'
 import './App.css'
@@ -458,6 +458,29 @@ function App() {
                           </p>
                         </>
                       )}
+
+                      {/* Activity signals */}
+                      {(() => {
+                        const commentCount = c.activity.filter((a) => a.type === 'comment').length
+                        const attachmentCount = c.attachments?.length ?? 0
+                        if (commentCount === 0 && attachmentCount === 0) return null
+                        return (
+                          <div className="flex items-center gap-3 mt-2">
+                            {commentCount > 0 && (
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <MessageSquare className="h-3 w-3" />
+                                {commentCount}
+                              </span>
+                            )}
+                            {attachmentCount > 0 && (
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <Paperclip className="h-3 w-3" />
+                                {attachmentCount}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()}
 
                       {/* Footer */}
                       {c.updatedAt && (
