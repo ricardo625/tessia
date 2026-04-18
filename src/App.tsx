@@ -9,9 +9,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle, MessageSquare, Paperclip } from 'lucide-react'
+import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle, MessageSquare, Paperclip, CreditCard, Bell, LogOut } from 'lucide-react'
 import { TaskModal, type TaskDetail } from '@/components/TaskModal'
 import { INITIAL_LABELS, type Label } from '@/components/LabelsPopover'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { Separator } from '@/components/ui/separator'
+import { NotificationsPanel } from '@/components/NotificationsPanel'
 import './App.css'
 
 type Column = { id: string; title: string }
@@ -49,7 +53,10 @@ const initialPipelineCards: TaskDetail[] = [
     id: 'p2', person: 'Elena Vasquez', column: 'qualified',
     description: 'Estate planning — trust & will revision',
     dealValue: '$6,500 flat fee', nextAction: 'Send engagement letter',
-    activity: [{ id: 'a2', user: 'Marcus Lee', initials: 'ML', action: 'qualified prospect', timestamp: '1.5 hours ago' }],
+    activity: [
+      { id: 'a2', user: 'Marcus Lee', initials: 'ML', action: 'qualified prospect', timestamp: '1.5 hours ago' },
+      { id: 'a2t', user: 'Marcus Lee', initials: 'ML', color: '#6366f1', action: '@RA can you review the engagement letter before we send?', timestamp: '45 min ago', type: 'comment', tagged: true },
+    ],
     updatedAt: hoursAgo(1.5), updatedBy: 'Marcus Lee', columnEnteredAt: daysAgoISO(5),
   },
   {
@@ -63,7 +70,10 @@ const initialPipelineCards: TaskDetail[] = [
     id: 'p4', person: 'Diana Osei', column: 'proposal',
     description: 'Employment dispute — wrongful termination claim',
     dealValue: '$40,000 contingency', nextAction: 'Await signed retainer',
-    activity: [{ id: 'a4', user: 'Carlos Rivera', initials: 'CR', action: 'sent retainer proposal', timestamp: '15 min ago' }],
+    activity: [
+      { id: 'a4', user: 'Carlos Rivera', initials: 'CR', action: 'sent retainer proposal', timestamp: '15 min ago' },
+      { id: 'a4t', user: 'Carlos Rivera', initials: 'CR', color: '#f59e0b', action: '@RA the client has questions about the contingency split — can you jump on a call?', timestamp: '10 min ago', type: 'comment', tagged: true },
+    ],
     updatedAt: hoursAgo(0.25), updatedBy: 'Carlos Rivera', columnEnteredAt: daysAgoISO(16),
   },
   {
@@ -102,7 +112,10 @@ const initialProcessCards: TaskDetail[] = [
     id: 'q3', person: 'Diana Osei', column: 'blocked',
     description: 'File EEOC complaint — wrongful termination',
     blockers: 'Awaiting employment records from former employer',
-    activity: [{ id: 'b3', user: 'Sara Patel', initials: 'SP', action: 'flagged blocker', timestamp: '45 min ago' }],
+    activity: [
+      { id: 'b3', user: 'Sara Patel', initials: 'SP', action: 'flagged blocker', timestamp: '45 min ago' },
+      { id: 'b3t', user: 'Sara Patel', initials: 'SP', color: '#10b981', action: '@RA this is now 18 days in blocked — should we escalate to the partner?', timestamp: '20 min ago', type: 'comment', tagged: true },
+    ],
     updatedAt: hoursAgo(0.75), updatedBy: 'Sara Patel', columnEnteredAt: daysAgoISO(18),
   },
   {
@@ -178,6 +191,7 @@ function App() {
   const [editingColId, setEditingColId] = useState<string | null>(null)
   const [editingColName, setEditingColName] = useState('')
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [allLabels, setAllLabels] = useState<Label[]>(INITIAL_LABELS)
   const editInputRef = useRef<HTMLInputElement>(null)
   const dragging = useRef<{ type: 'card' | 'column'; id: string } | null>(null)
@@ -319,6 +333,44 @@ function App() {
             <Plus className="h-4 w-4 mr-1" />
             Add Column
           </Button>
+
+          <Popover>
+            <PopoverTrigger className="outline-none">
+              <div className="relative">
+                <Avatar className="cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    RA
+                  </AvatarFallback>
+                </Avatar>
+                {[...pipelineCards, ...processCards].some((c) => c.activity.some((a) => a.tagged)) && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
+                )}
+              </div>
+            </PopoverTrigger>
+            <PopoverContent side="bottom" align="end" className="w-48 p-1">
+              <div className="px-2 py-1.5">
+                <p className="text-xs font-medium">Ricardo Amarilla</p>
+                <p className="text-[11px] text-muted-foreground">ricardo@foundey.com</p>
+              </div>
+              <Separator className="my-1" />
+              <button
+                className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors text-left"
+                onClick={() => setNotificationsOpen(true)}
+              >
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                Notifications
+              </button>
+              <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors text-left">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                Billing
+              </button>
+              <Separator className="my-1" />
+              <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted text-destructive transition-colors text-left">
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -548,6 +600,14 @@ function App() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Notifications panel */}
+      <NotificationsPanel
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        allCards={[...pipelineCards, ...processCards]}
+        onSelectTask={(task) => { setSelectedTask(task); setNotificationsOpen(false) }}
+      />
 
       {/* Task detail modal */}
       <TaskModal

@@ -35,6 +35,7 @@ export type ActivityItem = {
   timestamp: string
   type?: 'comment' | 'event'
   color?: string
+  tagged?: boolean
 }
 
 export type ChecklistItem = {
