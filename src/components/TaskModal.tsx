@@ -57,6 +57,7 @@ export type TaskDetail = {
   checklistName?: string
   checklistDueDate?: string
   attachments?: Attachment[]
+  columnEnteredAt?: string
   // Pipeline view fields
   dealValue?: string
   nextAction?: string

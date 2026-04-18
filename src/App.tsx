@@ -33,41 +33,45 @@ function hoursAgo(h: number) {
   return new Date(Date.now() - h * 60 * 60 * 1000)
 }
 
+function daysAgoISO(d: number) {
+  return new Date(Date.now() - d * 86400000).toISOString()
+}
+
 const initialPipelineCards: TaskDetail[] = [
   {
     id: 'p1', person: 'James Holloway', column: 'new-lead',
     description: 'Personal injury — rear-end collision on I-95',
     dealValue: '$18,000 est. retainer', nextAction: 'Schedule intake consultation',
     activity: [{ id: 'a1', user: 'Alice Johnson', initials: 'AJ', action: 'added inquiry', timestamp: '3 hours ago' }],
-    updatedAt: hoursAgo(3), updatedBy: 'Alice Johnson',
+    updatedAt: hoursAgo(3), updatedBy: 'Alice Johnson', columnEnteredAt: daysAgoISO(2),
   },
   {
     id: 'p2', person: 'Elena Vasquez', column: 'qualified',
     description: 'Estate planning — trust & will revision',
     dealValue: '$6,500 flat fee', nextAction: 'Send engagement letter',
     activity: [{ id: 'a2', user: 'Marcus Lee', initials: 'ML', action: 'qualified prospect', timestamp: '1.5 hours ago' }],
-    updatedAt: hoursAgo(1.5), updatedBy: 'Marcus Lee',
+    updatedAt: hoursAgo(1.5), updatedBy: 'Marcus Lee', columnEnteredAt: daysAgoISO(5),
   },
   {
     id: 'p3', person: 'Robert Ng', column: 'contacted',
     description: 'Business formation — LLC setup & operating agreement',
     dealValue: '$3,800 flat fee', nextAction: 'Follow up on scope questions',
     activity: [{ id: 'a3', user: 'Sara Patel', initials: 'SP', action: 'sent intro email', timestamp: '30 min ago' }],
-    updatedAt: hoursAgo(0.5), updatedBy: 'Sara Patel',
+    updatedAt: hoursAgo(0.5), updatedBy: 'Sara Patel', columnEnteredAt: daysAgoISO(9),
   },
   {
     id: 'p4', person: 'Diana Osei', column: 'proposal',
     description: 'Employment dispute — wrongful termination claim',
     dealValue: '$40,000 contingency', nextAction: 'Await signed retainer',
     activity: [{ id: 'a4', user: 'Carlos Rivera', initials: 'CR', action: 'sent retainer proposal', timestamp: '15 min ago' }],
-    updatedAt: hoursAgo(0.25), updatedBy: 'Carlos Rivera',
+    updatedAt: hoursAgo(0.25), updatedBy: 'Carlos Rivera', columnEnteredAt: daysAgoISO(16),
   },
   {
     id: 'p5', person: 'Marcus Webb', column: 'closed-won',
     description: 'Real estate closing — commercial property acquisition',
     dealValue: '$12,000 retainer', nextAction: 'Begin title search',
     activity: [{ id: 'a5', user: 'Nina Okafor', initials: 'NO', action: 'client signed retainer', timestamp: '5 min ago' }],
-    updatedAt: hoursAgo(0.08), updatedBy: 'Nina Okafor',
+    updatedAt: hoursAgo(0.08), updatedBy: 'Nina Okafor', columnEnteredAt: daysAgoISO(1),
   },
 ]
 
@@ -86,32 +90,32 @@ const initialProcessCards: TaskDetail[] = [
     id: 'q1', person: 'Elena Vasquez', column: 'backlog',
     description: 'Draft revocable living trust — estate planning matter',
     activity: [{ id: 'b1', user: 'Alice Johnson', initials: 'AJ', action: 'opened matter', timestamp: '2 hours ago' }],
-    updatedAt: hoursAgo(2), updatedBy: 'Alice Johnson',
+    updatedAt: hoursAgo(2), updatedBy: 'Alice Johnson', columnEnteredAt: daysAgoISO(3),
   },
   {
     id: 'q2', person: 'James Holloway', column: 'in-progress',
     description: 'Compile medical records and police report for PI claim',
     activity: [{ id: 'b2', user: 'Marcus Lee', initials: 'ML', action: 'assigned to intake', timestamp: '1 hour ago' }],
-    updatedAt: hoursAgo(1), updatedBy: 'Marcus Lee',
+    updatedAt: hoursAgo(1), updatedBy: 'Marcus Lee', columnEnteredAt: daysAgoISO(7),
   },
   {
     id: 'q3', person: 'Diana Osei', column: 'blocked',
     description: 'File EEOC complaint — wrongful termination',
     blockers: 'Awaiting employment records from former employer',
     activity: [{ id: 'b3', user: 'Sara Patel', initials: 'SP', action: 'flagged blocker', timestamp: '45 min ago' }],
-    updatedAt: hoursAgo(0.75), updatedBy: 'Sara Patel',
+    updatedAt: hoursAgo(0.75), updatedBy: 'Sara Patel', columnEnteredAt: daysAgoISO(18),
   },
   {
     id: 'q4', person: 'Robert Ng', column: 'review',
     description: 'Operating agreement draft — LLC formation review',
     activity: [{ id: 'b4', user: 'Carlos Rivera', initials: 'CR', action: 'submitted for partner review', timestamp: '20 min ago' }],
-    updatedAt: hoursAgo(0.33), updatedBy: 'Carlos Rivera',
+    updatedAt: hoursAgo(0.33), updatedBy: 'Carlos Rivera', columnEnteredAt: daysAgoISO(4),
   },
   {
     id: 'q5', person: 'Marcus Webb', column: 'done',
     description: 'Title search completed — commercial closing cleared',
     activity: [{ id: 'b5', user: 'Nina Okafor', initials: 'NO', action: 'closed matter step', timestamp: '5 min ago' }],
-    updatedAt: hoursAgo(0.08), updatedBy: 'Nina Okafor',
+    updatedAt: hoursAgo(0.08), updatedBy: 'Nina Okafor', columnEnteredAt: daysAgoISO(1),
   },
 ]
 
@@ -130,6 +134,12 @@ function formatUpdatedAt(date: Date) {
     ' at ' +
     date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
   )
+}
+
+function daysInColumn(enteredAt?: string): number {
+  if (!enteredAt) return 0
+  const diff = Date.now() - new Date(enteredAt).getTime()
+  return Math.floor(diff / 86400000)
 }
 
 function checklistDueStatus(dateStr?: string): 'overdue' | 'today' | null {
@@ -226,7 +236,7 @@ function App() {
     setColDropTarget(null)
 
     if (current?.type === 'card') {
-      setCards((prev) => prev.map((c) => (c.id === current.id ? { ...c, column: colId } : c)))
+      setCards((prev) => prev.map((c) => (c.id === current.id ? { ...c, column: colId, columnEnteredAt: new Date().toISOString() } : c)))
     } else if (current?.type === 'column' && colDropTarget) {
       const fromId = current.id
       setColumns((prev) => {
@@ -252,6 +262,7 @@ function App() {
       activity: [],
       updatedAt: new Date(),
       updatedBy: 'You',
+      columnEnteredAt: new Date().toISOString(),
     }
     setCards((prev) => [...prev, newCard])
   }
@@ -459,11 +470,13 @@ function App() {
                         </>
                       )}
 
-                      {/* Activity signals */}
+                      {/* Activity signals + days in column */}
                       {(() => {
                         const commentCount = c.activity.filter((a) => a.type === 'comment').length
                         const attachmentCount = c.attachments?.length ?? 0
-                        if (commentCount === 0 && attachmentCount === 0) return null
+                        const days = daysInColumn(c.columnEnteredAt)
+                        const hasSignals = commentCount > 0 || attachmentCount > 0 || days > 0
+                        if (!hasSignals) return null
                         return (
                           <div className="flex items-center gap-3 mt-2">
                             {commentCount > 0 && (
@@ -476,6 +489,12 @@ function App() {
                               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                 <Paperclip className="h-3 w-3" />
                                 {attachmentCount}
+                              </span>
+                            )}
+                            {days > 0 && (
+                              <span className={`flex items-center gap-1 text-[10px] ml-auto ${days >= 14 ? 'text-destructive' : days >= 7 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                <Clock className="h-3 w-3" />
+                                {days}d
                               </span>
                             )}
                           </div>
