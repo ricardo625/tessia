@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle, MessageSquare, Paperclip, CreditCard, Bell, LogOut } from 'lucide-react'
+import { Plus, Clock, AlertCircle, TrendingUp, Layers, DollarSign, ArrowRight, AlertTriangle, MessageSquare, Paperclip, CreditCard, Bell, LogOut, ArrowDownUp } from 'lucide-react'
 import { TaskModal, type TaskDetail } from '@/components/TaskModal'
 import { INITIAL_LABELS, type Label } from '@/components/LabelsPopover'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -193,6 +193,15 @@ function App() {
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set())
+  const [sortedCols, setSortedCols] = useState<Set<string>>(new Set())
+
+  function toggleColSort(colId: string) {
+    setSortedCols((prev) => {
+      const next = new Set(prev)
+      next.has(colId) ? next.delete(colId) : next.add(colId)
+      return next
+    })
+  }
   const [allLabels, setAllLabels] = useState<Label[]>(INITIAL_LABELS)
   const editInputRef = useRef<HTMLInputElement>(null)
   const dragging = useRef<{ type: 'card' | 'column'; id: string } | null>(null)
@@ -436,12 +445,27 @@ function App() {
                   {col.title}
                 </span>
               )}
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); toggleColSort(col.id) }}
+                className={`ml-auto flex-shrink-0 rounded p-0.5 transition-colors ${
+                  sortedCols.has(col.id)
+                    ? 'text-primary'
+                    : 'text-muted-foreground/40 hover:text-muted-foreground'
+                }`}
+                title={sortedCols.has(col.id) ? 'Remove sort' : 'Sort by latest edit'}
+              >
+                <ArrowDownUp className="h-3 w-3" />
+              </button>
             </div>
 
             <div className={`min-h-24 rounded-lg transition-colors ${dragOverCol === col.id ? 'bg-muted' : ''}`}>
-              {cards
-                .filter((c) => c.column === col.id)
-                .map((c) => (
+              {(sortedCols.has(col.id)
+                ? [...cards.filter((c) => c.column === col.id)].sort(
+                    (a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0)
+                  )
+                : cards.filter((c) => c.column === col.id)
+              ).map((c) => (
                   <Card
                     key={c.id}
                     draggable
