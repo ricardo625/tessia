@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { X, Search, Pencil, Plus, Check, Eye } from 'lucide-react'
+import { X, Search, Pencil, Plus, Check } from 'lucide-react'
 
 export type Label = {
   id: string
@@ -180,7 +180,7 @@ export function LabelsPopover({ children, selected, onChange, labels: labelsProp
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverTrigger>{children}</PopoverTrigger>
       <PopoverContent
         className="w-[300px] p-0 bg-background border-border rounded-xl shadow-2xl"
         align="start"

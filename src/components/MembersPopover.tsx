@@ -39,7 +39,7 @@ export function MembersPopover({ children, selected, onChange, members = BOARD_M
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverTrigger>{children}</PopoverTrigger>
       <PopoverContent
         className="w-[280px] p-0 bg-background border-border rounded-xl shadow-2xl"
         align="start"

@@ -190,7 +190,7 @@ export function TaskModal({ task, columnTitle, open, onClose, onUpdate, labels, 
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null)
   const [editingActivityText, setEditingActivityText] = useState('')
   const [showMention, setShowMention] = useState(false)
-  const [mentionQuery, setMentionQuery] = useState('')
+  const [, setMentionQuery] = useState('')
   const [mentionStart, setMentionStart] = useState(0)
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const commentRef = useRef<HTMLTextAreaElement>(null)
@@ -351,13 +351,6 @@ export function TaskModal({ task, columnTitle, open, onClose, onUpdate, labels, 
     setCreatingChecklist(false)
     setChecklistNameDraft('Checklist')
     setChecklistDueDateDraft('')
-  }
-
-  function deleteChecklist() {
-    if (!task) return
-    onUpdate({ ...task, checklist: undefined, checklistName: undefined, checklistDueDate: undefined, updatedAt: new Date(), updatedBy: CURRENT_USER.name })
-    setHideChecked(false)
-    setAddingItem(false)
   }
 
   function toggleChecklistItem(id: string) {
