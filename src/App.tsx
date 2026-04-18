@@ -192,6 +192,7 @@ function App() {
   const [editingColName, setEditingColName] = useState('')
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set())
   const [allLabels, setAllLabels] = useState<Label[]>(INITIAL_LABELS)
   const editInputRef = useRef<HTMLInputElement>(null)
   const dragging = useRef<{ type: 'card' | 'column'; id: string } | null>(null)
@@ -342,7 +343,9 @@ function App() {
                     RA
                   </AvatarFallback>
                 </Avatar>
-                {[...pipelineCards, ...processCards].some((c) => c.activity.some((a) => a.tagged)) && (
+                {[...pipelineCards, ...processCards].some((c) =>
+                  c.activity.some((a) => (a.tagged || a.action.includes('@RA')) && !readNotificationIds.has(a.id))
+                ) && (
                   <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
                 )}
               </div>
@@ -527,22 +530,16 @@ function App() {
                         const commentCount = c.activity.filter((a) => a.type === 'comment').length
                         const attachmentCount = c.attachments?.length ?? 0
                         const days = daysInColumn(c.columnEnteredAt)
-                        const hasSignals = commentCount > 0 || attachmentCount > 0 || days > 0
-                        if (!hasSignals) return null
                         return (
                           <div className="flex items-center gap-3 mt-2">
-                            {commentCount > 0 && (
-                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                <MessageSquare className="h-3 w-3" />
-                                {commentCount}
-                              </span>
-                            )}
-                            {attachmentCount > 0 && (
-                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                <Paperclip className="h-3 w-3" />
-                                {attachmentCount}
-                              </span>
-                            )}
+                            <span className={`flex items-center gap-1 text-[10px] ${commentCount === 0 ? 'text-muted-foreground/40' : 'text-muted-foreground'}`}>
+                              <MessageSquare className="h-3 w-3" />
+                              {commentCount}
+                            </span>
+                            <span className={`flex items-center gap-1 text-[10px] ${attachmentCount === 0 ? 'text-muted-foreground/40' : 'text-muted-foreground'}`}>
+                              <Paperclip className="h-3 w-3" />
+                              {attachmentCount}
+                            </span>
                             {days > 0 && (
                               <span className={`flex items-center gap-1 text-[10px] ml-auto ${days >= 14 ? 'text-destructive' : days >= 7 ? 'text-amber-500' : 'text-muted-foreground'}`}>
                                 <Clock className="h-3 w-3" />
@@ -606,6 +603,15 @@ function App() {
         open={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
         allCards={[...pipelineCards, ...processCards]}
+        readIds={readNotificationIds}
+        onMarkRead={(id) => setReadNotificationIds((prev) => new Set(prev).add(id))}
+        onMarkAllRead={() => {
+          const allTagged = [...pipelineCards, ...processCards]
+            .flatMap((c) => c.activity)
+            .filter((a) => a.tagged || a.action.includes('@RA'))
+            .map((a) => a.id)
+          setReadNotificationIds(new Set(allTagged))
+        }}
         onSelectTask={(task) => { setSelectedTask(task); setNotificationsOpen(false) }}
       />
 
